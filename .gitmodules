@@ -1,0 +1,12 @@
+[submodule "emp-agmpc"]
+	path = emp-agmpc
+	url = git@github.com:summitto/emp-agmpc.git
+[submodule "tlslite-ng"]
+	path = tlslite-ng
+	url = git@github.com:summitto/tlslite-ng.git
+[submodule "pagesigner-cli"]
+	path = pagesigner-cli
+	url = git@github.com:summitto/pagesigner-cli.git
+[submodule "tlsnotaryserver"]
+	path = tlsnotaryserver
+	url = git@github.com:summitto/tlsnotaryserver.git

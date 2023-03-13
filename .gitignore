@@ -1,0 +1,4 @@
+ephemeral_data/*
+build
+node_modules
+circom_circuits/main.circom
