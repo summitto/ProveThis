@@ -2,7 +2,8 @@
 
 ProveThis allows users to prove statements from websites and APIs using TLS without revealing private information. Although efforts like TLSNotary can currently be used to prove the authenticity and origin of a full HTML page, we extend the capabilities of TLSNotary and allow users to make zk-SNARK based zero knowledge proofs about statements in complexity class NP. More concretely, this can allow users to prove statements about e.g. their banking data or other data sources. Such proofs can generally be used to reduce fraud without compromising privacy and confidentiality.
 
-We are honoured that our open source work is sponsored by the NLNet Foundation. 
+We are honoured that our open source work is sponsored by the NLNet Foundation.
+
 ![NLNet](/nlnet_logo.png "nlnet_logo")
 The code represented in this repo is the first part of our devlierable to [NLNet](https://nlnet.nl/project/ProveThis/). 
 
