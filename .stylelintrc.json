@@ -1,0 +1,26 @@
+{ 
+  "extends": [
+    "stylelint-config-recommended"
+  ],
+  "rules": {
+    "selector-pseudo-element-no-unknown": [
+      true,
+      {
+        "ignorePseudoElements": ["v-deep"]
+      }
+    ],
+    "string-quotes": "single",
+    "no-eol-whitespace": true,
+    "rule-empty-line-before": "always",
+    "no-missing-end-of-source-newline": true,
+    "no-irregular-whitespace": true,
+    "comment-whitespace-inside": "always",
+    "indentation": 2,
+    "selector-max-empty-lines": 0,
+    "value-list-comma-space-before": "always",
+    "value-list-comma-space-after": "always",
+    "declaration-bang-space-after": "always",
+    "declaration-colon-space-after": "always",
+    "declaration-colon-space-before": "never"
+  }
+}

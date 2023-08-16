@@ -1,0 +1,47 @@
+.BankSelector-container {
+  min-height: 35vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center
+}
+
+.BankSelector-header{
+  min-height: 45vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center
+}
+
+.BankSelector-text{
+  text-align: center;
+  width: 650px;
+  margin-bottom: 10px;
+}
+
+.BankSelector-bank-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+  width: 210px;
+  justify-content: space-evenly;
+}
+
+.BankSelector-bank-image-container {
+  width: 90px;
+  height: 100px;
+  display: flex;
+  justify-content: center;
+}
+
+.BankSelector-bank-image {
+  object-fit: contain;
+  max-width: 100%;
+}
+
+.BankSelector-bank-name {
+  margin-bottom: 0;
+  width: 80px;
+  font-weight: 600;
+}

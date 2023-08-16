@@ -1,0 +1,15 @@
+[submodule "electron/proverlib/pagesigner"]
+	path = electron/proverlib/pagesigner
+	url = git@github.com:summitto/pagesigner.git
+[submodule "aes-mpc-lib"]
+	path = aes-mpc-lib
+	url = git@github.com:summitto/aes-mpc-lib.git
+[submodule "electron/static/tlslite-ng"]
+	path = electron/static/tlslite-ng
+	url = git@github.com:summitto/tlslite-ng.git
+[submodule "electron/static/mpc_circuits"]
+	path = electron/static/mpc_circuits
+	url = git@github.com:summitto/tag-verification-circuits.git
+[submodule "softspoken"]
+	path = softspoken
+	url = git@github.com:summitto/softspoken-wrapper.git

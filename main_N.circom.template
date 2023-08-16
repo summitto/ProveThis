@@ -1,0 +1,61 @@
+pragma circom 2.0.0;
+
+include "aes.circom";
+include "bitify.circom";
+
+template Main(maxBlocksToReveal) {
+
+  var keyLength = 16;
+  var nonceLength = 12;
+  var ciphertextlen = maxBlocksToReveal*16;
+  signal input ciphertext[ciphertextlen];
+  signal input key[keyLength];
+  signal input nonce[nonceLength];
+  signal input starting_aes_block;
+  signal input bytes_to_reveal[ciphertextlen];
+  signal output plaintext[ciphertextlen];
+
+  component aes = aes(ciphertextlen, keyLength*8);
+  component Num2BitsCiphertext[ciphertextlen];
+  for (var i = 0; i < ciphertextlen; i++) {
+    Num2BitsCiphertext[i] = Num2Bits(8);
+    Num2BitsCiphertext[i].in <== ciphertext[i];
+    for (var j = 0; j < 8; j++) {
+      aes.ciphertext[i][j] <== Num2BitsCiphertext[i].out[7 - j];
+    }
+  }
+  component Num2BitsKey[keyLength];
+  for (var i = 0; i < keyLength; i++) {
+    Num2BitsKey[i] = Num2Bits(8);
+    Num2BitsKey[i].in <== key[i];
+    for (var j = 0; j < 8; j++) {
+      aes.key[8*i + j] <== Num2BitsKey[i].out[7 - j];
+    }
+  }
+  for (var i = 0; i < 12; i++) {
+    aes.nonce[i] <== nonce[i];
+  }
+  aes.starting_aes_block <== starting_aes_block;
+
+  // Converting back to bytes and revealing only those bytes as noted in bytes_to_reveal
+  signal totalPlaintext[ciphertextlen];
+  component Bits2Num[ciphertextlen];
+  component SelectPlaintextToReveal[ciphertextlen];
+  for (var i = 0; i < ciphertextlen; i++) {
+    Bits2Num[i] = Bits2Num(8);
+    for (var k = 0; k < 8; k++) {
+      Bits2Num[i].in[7 - k] <== aes.plaintext[i][k];
+    }
+    totalPlaintext[i] <== Bits2Num[i].out;
+    SelectPlaintextToReveal[i]  = select2();
+    SelectPlaintextToReveal[i].values[1] <== 0;
+    SelectPlaintextToReveal[i].values[0] <== totalPlaintext[i];
+    SelectPlaintextToReveal[i].bits[0] <== bytes_to_reveal[i];
+    plaintext[i] <== SelectPlaintextToReveal[i].out;
+    log(plaintext[i]);
+  }
+}
+
+// NOTE: a requirement for succesful proof creation/validation is that all output variables are set (and potentially tested)
+// NOTE: according to DECO nonce/IV is public (see appendix B.2)
+component main {public [ ciphertext, nonce, starting_aes_block, bytes_to_reveal ]} = Main(NUMBER_OF_AES_BLOCKS_HERE);
