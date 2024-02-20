@@ -240,6 +240,7 @@ async function notarize(pagesignerCacheDir, notary, server, headers) {
     clientServerWriteKeyShare,
     mpcId: obj.mpcId,
     records: obj['server response records'],
+    notarizationDocument: obj,
     clientSivShare,
   };
 }

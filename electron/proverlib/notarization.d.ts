@@ -31,6 +31,7 @@ export type NotarizationResult = {
   aadList: string[]
   notaryServerWriteKeyShare: string
   clientServerWriteKeyShare: string
+  notarizationDocument: object
   mpcId: string
   clientSivShare: Uint8Array
   records: Uint8Array[]

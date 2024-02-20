@@ -2,20 +2,25 @@ pragma circom 2.0.0;
 
 include "aes.circom";
 include "bitify.circom";
+include "key_shares.circom";
 
 template Main(maxBlocksToReveal) {
-
   var keyLength = 16;
+  var hashLength = 32;
   var nonceLength = 12;
   var ciphertextlen = maxBlocksToReveal*16;
+
   signal input ciphertext[ciphertextlen];
-  signal input key[keyLength];
+  signal input client_key_share[keyLength];
+  signal input client_key_share_commitment[hashLength];
+  signal input notary_key_share[keyLength];
   signal input nonce[nonceLength];
   signal input starting_aes_block;
   signal input bytes_to_reveal[ciphertextlen];
   signal output plaintext[ciphertextlen];
 
   component aes = aes(ciphertextlen, keyLength*8);
+
   component Num2BitsCiphertext[ciphertextlen];
   for (var i = 0; i < ciphertextlen; i++) {
     Num2BitsCiphertext[i] = Num2Bits(8);
@@ -24,14 +29,21 @@ template Main(maxBlocksToReveal) {
       aes.ciphertext[i][j] <== Num2BitsCiphertext[i].out[7 - j];
     }
   }
-  component Num2BitsKey[keyLength];
+
+  component keyCommitment = CheckKeySharesCommitment();
   for (var i = 0; i < keyLength; i++) {
-    Num2BitsKey[i] = Num2Bits(8);
-    Num2BitsKey[i].in <== key[i];
+    keyCommitment.client_key_share[i] <== client_key_share[i];
+    keyCommitment.notary_key_share[i] <== notary_key_share[i];
+  }
+  for (var i = 0; i < hashLength; i++) {
+    keyCommitment.hash[i] <== client_key_share_commitment[i];
+  }
+  for (var i = 0; i < keyLength; i++) {
     for (var j = 0; j < 8; j++) {
-      aes.key[8*i + j] <== Num2BitsKey[i].out[7 - j];
+      aes.key[8*i + j] <== keyCommitment.out[i][7 - j];
     }
   }
+
   for (var i = 0; i < 12; i++) {
     aes.nonce[i] <== nonce[i];
   }
@@ -58,4 +70,4 @@ template Main(maxBlocksToReveal) {
 
 // NOTE: a requirement for succesful proof creation/validation is that all output variables are set (and potentially tested)
 // NOTE: according to DECO nonce/IV is public (see appendix B.2)
-component main {public [ ciphertext, nonce, starting_aes_block, bytes_to_reveal ]} = Main(NUMBER_OF_AES_BLOCKS_HERE);
+component main {public [ ciphertext, client_key_share, client_key_share_commitment, nonce, starting_aes_block, bytes_to_reveal ]} = Main(NUMBER_OF_AES_BLOCKS_HERE);

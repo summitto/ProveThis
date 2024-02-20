@@ -1,9 +1,9 @@
 import sys
 import json
 
-help = "Usage: python3 ./create_circom_files.py <inputfile> <aad> <startingindex> <plaintextlen> <maxBlocksToReveal> <aes_keyshare_1> <aes_keyshare_2> <circom_inputfile>"
+help = "Usage: python3 ./create_circom_files.py <inputfile> <aad> <startingindex> <plaintextlen> <maxBlocksToReveal> <notary_keyshare> <circom_inputfile>"
 
-if (len(sys.argv)) <= 8:
+if (len(sys.argv)) <= 7:
     print(help)
     exit(1)
 
@@ -12,9 +12,8 @@ aad = bytearray.fromhex(sys.argv[2])
 starting_index = int(sys.argv[3])
 plaintextlen = int(sys.argv[4])
 maxBlocksToReveal = int(sys.argv[5])
-aes_key_share_1 = sys.argv[6]
-aes_key_share_2 = sys.argv[7]
-circom_inputfile = sys.argv[8]
+notary_key_share = sys.argv[6]
+circom_inputfile = sys.argv[7]
 
 circom_input = {}
 starting_aes_block = 0
@@ -24,7 +23,11 @@ assert(plaintextlen <= maxBlocksToReveal*16)
 with open(inputfile, 'r') as f:
     input = json.load(f)
     circom_input["nonce"] = input["nonce"]
-    circom_input["key"] = input["key"]
+
+    circom_input["client_key_share"] = input["client_swk_share"]
+    circom_input["client_key_share_commitment"] = input["share_commitment"]
+    circom_input["notary_key_share"] = [str(byte) for byte in bytes.fromhex(notary_key_share)]
+
     taglength = 16
     assert(starting_index+plaintextlen <= len(input["ciphertext"]) - taglength) # we should not try to decrypt the tag
 

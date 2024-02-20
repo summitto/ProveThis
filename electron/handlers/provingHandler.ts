@@ -121,7 +121,7 @@ const provingHandler = () => {
   });
 
   async function verifySignature(sig: string, ciphertext: number[]): Promise<boolean> {
-    const signatureBytes = Buffer.from(signature, 'hex');
+    const signatureBytes = Buffer.from(sig, 'hex');
 
     const signingPubKeyResponse = await net.fetch(`http://${notary.notaryIP}:${notary.notaryPort}/signing-key.pem`);
     const signingKeyPem = await signingPubKeyResponse.text();
@@ -354,7 +354,6 @@ const provingHandler = () => {
         startingIndex,
         plaintextBytesToReveal,
         aesBlocksToReveal,
-        result.clientServerWriteKeyShare,
         result.notaryServerWriteKeyShare,
         onScriptError,
       );

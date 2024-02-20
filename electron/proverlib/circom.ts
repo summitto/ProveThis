@@ -29,22 +29,26 @@ function createMainCircuit(numBlocksToReveal: number): string {
   return `pragma circom 2.0.0;
 
 include "aes.circom";
-// include "../node_modules/circomlib/circuits/bitify.circom";
 include "bitify.circom";
+include "key_shares.circom";
 
 template Main(maxBlocksToReveal) {
-
   var keyLength = 16;
+  var hashLength = 32;
   var nonceLength = 12;
   var ciphertextlen = maxBlocksToReveal*16;
+
   signal input ciphertext[ciphertextlen];
-  signal input key[keyLength];
+  signal input client_key_share[keyLength];
+  signal input client_key_share_commitment[hashLength];
+  signal input notary_key_share[keyLength];
   signal input nonce[nonceLength];
   signal input starting_aes_block;
   signal input bytes_to_reveal[ciphertextlen];
   signal output plaintext[ciphertextlen];
 
   component aes = aes(ciphertextlen, keyLength*8);
+
   component Num2BitsCiphertext[ciphertextlen];
   for (var i = 0; i < ciphertextlen; i++) {
     Num2BitsCiphertext[i] = Num2Bits(8);
@@ -53,14 +57,21 @@ template Main(maxBlocksToReveal) {
       aes.ciphertext[i][j] <== Num2BitsCiphertext[i].out[7 - j];
     }
   }
-  component Num2BitsKey[keyLength];
+
+  component keyCommitment = CheckKeySharesCommitment();
   for (var i = 0; i < keyLength; i++) {
-    Num2BitsKey[i] = Num2Bits(8);
-    Num2BitsKey[i].in <== key[i];
+    keyCommitment.client_key_share[i] <== client_key_share[i];
+    keyCommitment.notary_key_share[i] <== notary_key_share[i];
+  }
+  for (var i = 0; i < hashLength; i++) {
+    keyCommitment.hash[i] <== client_key_share_commitment[i];
+  }
+  for (var i = 0; i < keyLength; i++) {
     for (var j = 0; j < 8; j++) {
-      aes.key[8*i + j] <== Num2BitsKey[i].out[7 - j];
+      aes.key[8*i + j] <== keyCommitment.out[i][7 - j];
     }
   }
+
   for (var i = 0; i < 12; i++) {
     aes.nonce[i] <== nonce[i];
   }
@@ -87,15 +98,15 @@ template Main(maxBlocksToReveal) {
 
 // NOTE: a requirement for succesful proof creation/validation is that all output variables are set (and potentially tested)
 // NOTE: according to DECO nonce/IV is public (see appendix B.2)
-component main {public [ ciphertext, nonce, starting_aes_block, bytes_to_reveal ]} = Main(${numBlocksToReveal});
+component main {public [ ciphertext, client_key_share, client_key_share_commitment, nonce, starting_aes_block, bytes_to_reveal ]} = Main(${numBlocksToReveal});
 `;
 }
 
 async function prepareMainCircuit(env: EnvironmentInfo, blocksToReveal: number): Promise<string> {
   const mainCircuitPath = join(env.circomCircuitsDir, `main_${blocksToReveal}.circom`);
-  if (await fsExists(mainCircuitPath)) {
-    return mainCircuitPath;
-  }
+  // if (await fsExists(mainCircuitPath)) {
+  //   return mainCircuitPath;
+  // }
 
   await fsWriteFile(mainCircuitPath, createMainCircuit(blocksToReveal));
   return mainCircuitPath;
@@ -177,7 +188,6 @@ async function exportVerificationKey(env: EnvironmentInfo, zkeyPath: string): Pr
  * @param startingIndex Starting index in response for decryption (relative to the TLS record)
  * @param plaintextLen Number of bytes to decrypt in response
  * @param maxBlocksToReveal Maxiumum number of AES blocks to reveal (must be the same as in {@link prepareMainCircuit})
- * @param clientKeyShare AES key share of the client
  * @param serverKeyShare AES key share of the server
  * @return Generated circom input file path
  */
@@ -188,7 +198,6 @@ async function prepareCircomInput(
   startingIndex: number,
   plaintextLen: number,
   maxBlocksToReveal: number,
-  clientKeyShare: string,
   serverKeyShare: string,
   onScriptError: (data: { code: number|null; errorBuffer: string }) => void = () => {},
 ): Promise<[circomInputPath: string, witnessInputPath: string]> {
@@ -220,7 +229,6 @@ async function prepareCircomInput(
       startingIndex.toString(),
       plaintextLen.toString(),
       maxBlocksToReveal.toString(),
-      clientKeyShare,
       serverKeyShare,
       circomInputPath,
     ],
