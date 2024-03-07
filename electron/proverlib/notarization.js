@@ -12,6 +12,10 @@ import jsdom from 'jsdom';
 
 import CBOR from 'cbor-js';
 
+import { promisify } from 'util';
+
+const fsWriteFile = promisify(fs.writeFile);
+
 global.sodium = require('libsodium-wrappers-sumo');
 global.nacl = require('tweetnacl');
 global.ECSimple = require('simple-js-ec-math');
@@ -257,6 +261,47 @@ async function runNotarize(env, notary, server, headers) {
   setup(env.pagesignerCacheDir);
   console.log(`Notarizing ${server}...`);
   return notarize(env.pagesignerCacheDir, notary, server, headers);
+}
+
+export async function saveNotarizationDocument(document, path) {
+  // {
+  //   'notary PMS share': notaryPMSShare,
+  //   'client PMS share': pmsShare,
+  //   'client random': cr,
+  //   'server random': sr,
+  //   'notary client_write_key share': notaryCwkShare,
+  //   'notary client_write_iv share': notaryCivShare,
+  //   'notary server_write_key share': notarySwkShare,
+  //   'notary server_write_iv share': notarySivShare,
+  //   'client client_write_key share commitment': cwkShareHash,
+  //   'client client_write_iv share commitment': civShareHash,
+  //   'client server_write_key share commitment': swkShareHash,
+  //   'client server_write_iv share commitment': sivShareHash,
+  //   mpcId: this.twopc.uid,
+  // }
+
+  // the fields above are not needed to verify the session signature and the ZK proof.
+  // adding notary's shares to the saved document will allow restoring the decryption key
+  // and reading the whole ciphertext, which we don't want.
+  const notarizationDocumentSave = {
+    certificates: document.certificates,
+    'notarization time': document['notarization time'],
+    'server RSA sig': document['server RSA sig'],
+    'server pubkey for ECDHE': document['server pubkey for ECDHE'],
+    'client request ciphertext': document['client request ciphertext'],
+    'server response records': document['server response records'],
+    'session signature': document['session signature'],
+    'ephemeral pubkey': document['ephemeral pubkey'],
+    'ephemeral valid from': document['ephemeral valid from'],
+    'ephemeral valid until': document['ephemeral valid until'],
+    'ephemeral signed by master key': document['ephemeral signed by master key'],
+    'client client_write_key share': document['client client_write_key share'],
+    'client client_write_iv share': document['client client_write_iv share'],
+    'client server_write_key share': document['client server_write_key share'],
+    'client server_write_iv share': document['client server_write_iv share'],
+  };
+
+  await fsWriteFile(path, JSON.stringify(notarizationDocumentSave));
 }
 
 export default runNotarize;

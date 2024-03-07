@@ -170,6 +170,7 @@ const ProvingView = () => {
             <div>Proof: proof.json</div>
             <div>Public inputs: publicInputs.json</div>
             <div>Verifying Key: verifyingKey.json</div>
+            <div>Notarization document: notarization.json</div>
             <div>Proven fragment cipher text: ciphertext.bin</div>
 
             <div style={{ marginTop: 15, fontWeight: 600 }}>Decoded proven cleartext:</div>

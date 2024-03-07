@@ -10,7 +10,7 @@ import {
   prepareMainCircuit, compileMainCircuit, prepareCircomInput,
   generateWitness, createProof, verifyProof, saveProof, saveVerificationKey,
 } from '../proverlib/circom';
-import runNotarize from '../proverlib/notarization';
+import runNotarize, { saveNotarizationDocument } from '../proverlib/notarization';
 import type { NotarySettings } from '../proverlib/notarization';
 import { getProverEnv } from './proverSetupHandler';
 import { b64decode, ba2str } from '../proverlib/pagesigner/core/utils';
@@ -436,6 +436,7 @@ const provingHandler = () => {
 
       await saveProof(proof, join(proofPath[0], 'proof.json'), publicInputs, join(proofPath[0], 'publicInputs.json'));
       await saveVerificationKey(verificationKey, join(proofPath[0], 'verifyingKey.json'));
+      await saveNotarizationDocument(result.notarizationDocument, join(proofPath[0], 'notarization.json'));
     } catch (error: any) {
       console.log('Proving error:', error);
       event.sender.send('provingStatus', { error: error.message || error });

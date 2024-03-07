@@ -31,10 +31,12 @@ export type NotarizationResult = {
   aadList: string[]
   notaryServerWriteKeyShare: string
   clientServerWriteKeyShare: string
-  notarizationDocument: object
+  notarizationDocument: Record<string, unknown>
   mpcId: string
   clientSivShare: Uint8Array
   records: Uint8Array[]
 }
 
 declare function runNotarize(env: EnvironmentInfo, notary: NotarySettings, server: string, headers: string): Promise<NotarizationResult>;
+
+export function saveNotarizationDocument(document: Record<string, unknown>, path: string): Promise<void>;
